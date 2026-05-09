@@ -7,7 +7,6 @@ const app = new Hono()
 
 app.use(cors())
 
-// 主页面
 app.get('/', async (c) => {
     return c.html(`
 <!DOCTYPE html>
@@ -37,7 +36,10 @@ app.get('/', async (c) => {
                         <th class="p-4">充值状态</th>
                         <th class="p-4">成本(฿)</th>
                         <th class="p-4">销售价(¥)</th>
+                        <th class="p-4">销售汇率</th>
                         <th class="p-4">销售状态</th>
+                        <th class="p-4">销售日期</th>
+                        <th class="p-4">利润</th>
                         <th class="p-4">操作</th>
                     </tr>
                 </thead>
@@ -51,44 +53,56 @@ app.get('/', async (c) => {
             const res = await fetch('/api/accounts');
             const data = await res.json();
             const tbody = document.getElementById('tbody');
-            tbody.innerHTML = data.map(a => \`
-                <tr>
+            tbody.innerHTML = data.map(a => createRow(a)).join('');
+        }
+
+        function createRow(a) {
+            return \`
+                <tr id="row-\${a.id}">
                     <td class="p-4 font-mono">\${a.email}</td>
                     <td class="p-4">\${a.status || '未充值'}</td>
                     <td class="p-4">\${a.cost_thb || 2490}</td>
                     <td class="p-4">\${a.price_rmb || '-'}</td>
+                    <td class="p-4">\${a.sale_rate || '4.73'}</td>
                     <td class="p-4">\${a.sale_status || '未售'}</td>
+                    <td class="p-4">\${a.sale_date || ''}</td>
+                    <td class="p-4 text-emerald-400">\${calculateProfit(a)}</td>
                     <td class="p-4">
-                        <button onclick="deleteAcc('\${a.id}')" class="bg-red-600 px-4 py-1 rounded text-sm">删除</button>
+                        <button onclick="editRow('\${a.id}')" class="bg-blue-600 px-4 py-1 rounded mr-2">编辑</button>
+                        <button onclick="deleteAcc('\${a.id}')" class="bg-red-600 px-4 py-1 rounded">删除</button>
                     </td>
                 </tr>
-            \`).join('');
+            \`;
+        }
+
+        function calculateProfit(a) {
+            const price = Number(a.price_rmb) || 0;
+            const rate = Number(a.sale_rate) || 4.73;
+            const cost = Number(a.cost_thb) || 2490;
+            return price > 0 ? (price - cost / rate).toFixed(2) : '—';
         }
 
         async function addAccount() {
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('pass').value.trim();
             if (!email || !pass) return alert('请填写完整');
-
+            
             const res = await fetch('/api/accounts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, pass })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, pass})
             });
-
             if (res.ok) {
-                alert('✅ 入库成功！');
+                alert('✅ 入库成功');
                 document.getElementById('email').value = '';
                 document.getElementById('pass').value = '';
                 loadAccounts();
-            } else {
-                alert('❌ 入库失败');
-            }
+            } else alert('入库失败');
         }
 
         async function deleteAcc(id) {
-            if (!confirm('确定删除吗？')) return;
-            await fetch('/api/accounts/' + id, { method: 'DELETE' });
+            if (!confirm('确定删除？')) return;
+            await fetch('/api/accounts/' + id, {method: 'DELETE'});
             loadAccounts();
         }
 
