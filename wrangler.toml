@@ -1,1 +1,11 @@
+name = "jm-pro"
+main = "src/index.js"
+compatibility_date = "2025-05-01"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "jm_pro"
+database_id = "你的D1数据库ID"   # ← 改成你自己的
+
+[vars]
+ENV = "production"
