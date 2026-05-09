@@ -5,8 +5,12 @@ const app = new Hono()
 // 获取所有账号
 app.get('/', async (c) => {
     const { DB } = c.env;
-    const result = await DB.prepare("SELECT * FROM accounts ORDER BY created_at DESC").all();
-    return c.json(result.results || []);
+    try {
+        const result = await DB.prepare("SELECT * FROM accounts ORDER BY created_at DESC").all();
+        return c.json(result.results || []);
+    } catch (e) {
+        return c.json([], 500);
+    }
 });
 
 // 添加账号
@@ -26,6 +30,14 @@ app.post('/', async (c) => {
     } catch (e) {
         return c.json({ success: false, error: e.message }, 500);
     }
+});
+
+// 删除账号
+app.delete('/:id', async (c) => {
+    const id = c.req.param('id');
+    const { DB } = c.env;
+    await DB.prepare("DELETE FROM accounts WHERE id = ?").bind(id).run();
+    return c.json({ success: true });
 });
 
 export default app;
