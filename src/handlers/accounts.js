@@ -9,6 +9,7 @@ app.get('/', async (c) => {
         const result = await DB.prepare("SELECT * FROM accounts ORDER BY created_at DESC").all();
         return c.json(result.results || []);
     } catch (e) {
+        console.error(e);
         return c.json([], 500);
     }
 });
@@ -28,6 +29,7 @@ app.post('/', async (c) => {
 
         return c.json({ success: true });
     } catch (e) {
+        console.error(e);
         return c.json({ success: false, error: e.message }, 500);
     }
 });
@@ -36,8 +38,12 @@ app.post('/', async (c) => {
 app.delete('/:id', async (c) => {
     const id = c.req.param('id');
     const { DB } = c.env;
-    await DB.prepare("DELETE FROM accounts WHERE id = ?").bind(id).run();
-    return c.json({ success: true });
+    try {
+        await DB.prepare("DELETE FROM accounts WHERE id = ?").bind(id).run();
+        return c.json({ success: true });
+    } catch (e) {
+        return c.json({ success: false }, 500);
+    }
 });
 
 export default app;
