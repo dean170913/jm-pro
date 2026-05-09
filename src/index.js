@@ -16,12 +16,11 @@ app.get('/', async (c) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>JM PRO V7 - 多文件版</title>
+    <title>JM PRO V7</title>
 </head>
-<body class="bg-slate-950 text-slate-200 min-h-screen">
+<body class="bg-slate-950 text-slate-200">
     <div class="max-w-7xl mx-auto p-8">
-        <h1 class="text-4xl font-black mb-2">既梦跨境中台 V7</h1>
-        <p class="text-emerald-400 mb-8">GitHub 多文件部署版</p>
+        <h1 class="text-4xl font-black mb-8">既梦跨境中台 V7</h1>
 
         <!-- 快速入库 -->
         <div class="bg-slate-900 p-6 rounded-3xl mb-8 flex gap-4">
@@ -30,36 +29,79 @@ app.get('/', async (c) => {
             <button onclick="addAccount()" class="bg-blue-600 hover:bg-blue-700 px-10 rounded-2xl font-bold">快速入库</button>
         </div>
 
-        <div id="status" class="mb-4 text-emerald-400"></div>
+        <div class="bg-slate-900 rounded-3xl overflow-hidden">
+            <table class="w-full" id="table">
+                <thead class="bg-slate-800">
+                    <tr>
+                        <th class="p-4 text-left">邮箱</th>
+                        <th class="p-4">充值状态</th>
+                        <th class="p-4">成本</th>
+                        <th class="p-4">销售价</th>
+                        <th class="p-4">汇率</th>
+                        <th class="p-4">销售状态</th>
+                        <th class="p-4">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody" class="divide-y divide-slate-700"></tbody>
+            </table>
+        </div>
     </div>
 
     <script>
+        async function loadData() {
+            const res = await fetch('/api/accounts');
+            const data = await res.json();
+            const tbody = document.getElementById('tbody');
+            tbody.innerHTML = data.map(a => \`
+                <tr>
+                    <td class="p-4 font-mono">\${a.email}</td>
+                    <td class="p-4">\${a.status || '未充值'}</td>
+                    <td class="p-4">\${a.cost_thb}</td>
+                    <td class="p-4">\${a.price_rmb || '-'}</td>
+                    <td class="p-4">\${a.sale_rate || '4.73'}</td>
+                    <td class="p-4">\${a.sale_status || '未售'}</td>
+                    <td class="p-4">
+                        <button onclick="deleteAcc('\${a.id}')" class="bg-red-600 px-3 py-1 rounded">删除</button>
+                    </td>
+                </tr>
+            \`).join('');
+        }
+
         async function addAccount() {
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('pass').value.trim();
-            if (!email || !pass) return alert('邮箱和密码不能为空');
+            if (!email || !pass) return alert('请填写完整');
 
             const res = await fetch('/api/accounts', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, pass })
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email, pass})
             });
 
             if (res.ok) {
-                document.getElementById('status').innerHTML = '✅ 入库成功！';
+                alert('✅ 入库成功');
                 document.getElementById('email').value = '';
                 document.getElementById('pass').value = '';
+                loadData();
             } else {
                 alert('入库失败');
             }
         }
+
+        async function deleteAcc(id) {
+            if (!confirm('确定删除？')) return;
+            await fetch('/api/accounts/' + id, { method: 'DELETE' });
+            loadData();
+        }
+
+        loadData();
     </script>
 </body>
 </html>
-    `)
-})
+    `);
+});
 
-app.post('/login', login)
-app.route('/api/accounts', accounts)
+app.post('/login', login);
+app.route('/api/accounts', accounts);
 
-export default app
+export default app;
