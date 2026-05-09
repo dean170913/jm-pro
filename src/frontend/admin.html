@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>JM PRO V7</title>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div class="max-w-7xl mx-auto p-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-4xl font-black">既梦跨境中台 V7</h1>
+            <div class="text-emerald-400">欢迎，Admin</div>
+        </div>
+
+        <!-- 快速入库 -->
+        <div class="bg-slate-900 p-6 rounded-3xl mb-8 flex gap-4">
+            <input id="email" placeholder="邮箱地址" class="flex-1 p-4 bg-slate-800 rounded-2xl outline-none">
+            <input id="pass" placeholder="密码" class="w-64 p-4 bg-slate-800 rounded-2xl outline-none">
+            <button onclick="addAccount()" 
+                    class="bg-blue-600 hover:bg-blue-700 px-10 rounded-2xl font-bold">快速入库</button>
+        </div>
+
+        <!-- 账号表格 -->
+        <div class="bg-slate-900 rounded-3xl overflow-hidden">
+            <table class="w-full" id="accountTable">
+                <thead class="bg-slate-800">
+                    <tr>
+                        <th class="p-4 text-left">邮箱</th>
+                        <th class="p-4">充值状态</th>
+                        <th class="p-4">成本(฿)</th>
+                        <th class="p-4">销售价(¥)</th>
+                        <th class="p-4">销售汇率</th>
+                        <th class="p-4">销售状态</th>
+                        <th class="p-4">销售日期</th>
+                        <th class="p-4">利润(¥)</th>
+                        <th class="p-4">负责人</th>
+                        <th class="p-4 w-32">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-700"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let accounts = [];
+
+        async function loadAccounts() {
+            const res = await fetch('/api/accounts');
+            if (res.ok) {
+                accounts = await res.json();
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = accounts.map(a => `
+                <tr id="row-${a.id}" class="hover:bg-slate-800/50">
+                    <td class="p-4 font-mono">${a.email}</td>
+                    <!-- 其他列类似，后面我会补全 -->
+                    <td class="p-4">
+                        <button onclick="toggleEdit('${a.id}')" class="edit-btn bg-blue-600 px-4 py-1 rounded">编辑</button>
+                        <button onclick="deleteAcc('${a.id}')" class="bg-red-600 px-4 py-1 rounded">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function addAccount() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('pass').value.trim();
+            if (!email || !pass) return alert('请填写邮箱和密码');
+
+            const res = await fetch('/api/accounts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, pass })
+            });
+
+            if (res.ok) {
+                alert('✅ 入库成功');
+                document.getElementById('email').value = '';
+                document.getElementById('pass').value = '';
+                loadAccounts();
+            } else {
+                alert('入库失败');
+            }
+        }
+
+        // 其他函数后续补充
+        loadAccounts();
+    </script>
+</body>
+</html>
