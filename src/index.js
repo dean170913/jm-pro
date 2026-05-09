@@ -7,7 +7,7 @@ const app = new Hono()
 
 app.use(cors())
 
-// ==================== 主页面 ====================
+// 主页面
 app.get('/', async (c) => {
     return c.html(`
 <!DOCTYPE html>
@@ -20,8 +20,7 @@ app.get('/', async (c) => {
 </head>
 <body class="bg-slate-950 text-slate-200">
     <div class="max-w-7xl mx-auto p-8">
-        <h1 class="text-4xl font-black mb-2">既梦跨境中台 V7</h1>
-        <p class="text-emerald-400 mb-8">GitHub 多文件部署版</p>
+        <h1 class="text-4xl font-black mb-8">既梦跨境中台 V7</h1>
 
         <!-- 快速入库 -->
         <div class="bg-slate-900 p-6 rounded-3xl mb-8 flex gap-4">
@@ -69,7 +68,7 @@ app.get('/', async (c) => {
         async function addAccount() {
             const email = document.getElementById('email').value.trim();
             const pass = document.getElementById('pass').value.trim();
-            if (!email || !pass) return alert('请填写邮箱和密码');
+            if (!email || !pass) return alert('请填写完整');
 
             const res = await fetch('/api/accounts', {
                 method: 'POST',
@@ -88,12 +87,12 @@ app.get('/', async (c) => {
         }
 
         async function deleteAcc(id) {
-            if (!confirm('确定删除这条记录吗？')) return;
+            if (!confirm('确定删除吗？')) return;
             await fetch('/api/accounts/' + id, { method: 'DELETE' });
             loadAccounts();
         }
 
-        // 页面加载时获取数据
+        // 初始加载
         loadAccounts();
     </script>
 </body>
