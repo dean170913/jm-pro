@@ -5,7 +5,7 @@ compatibility_date = "2025-05-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "jm_pro"
-database_id = "你的D1数据库ID"   # ← 改成你自己的
+database_id = "d36015e9-c70b-4841-8ac0-926dda55a779"   # ← 改成你自己的
 
 [vars]
 ENV = "production"
